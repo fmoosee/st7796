@@ -116,6 +116,7 @@ void setup()
   sscanf(__TIME__ + 3, "%02d", &minute);
   sscanf(__TIME__ , "%02d", &hour);
   createMenu();
+  teste();
 }
 void loop()
 {
