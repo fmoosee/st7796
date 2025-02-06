@@ -73,6 +73,7 @@ void secClock(lv_timer_t* t){
   snprintf(output, sizeof(output), "%02d:%02d:%02d", hour, minute, second);
   lv_label_set_text(obj, output);
 }
+char labelText[8];
 
 void createMenu(){
   menuScr = lv_obj_create(NULL);
@@ -83,13 +84,6 @@ void createMenu(){
   lv_obj_set_style_bg_opa(labelClock, 50, LV_PART_MAIN);
   lv_obj_set_style_radius(labelClock, 10, LV_PART_MAIN); 
   lv_timer_t* timerClock = lv_timer_create(secClock, 1000, labelClock);
-  lv_obj_t* tab = lv_tabview_create(menuScr, LV_DIR_TOP, 30);
-  lv_obj_set_size(tab, 240, 320);
-  lv_obj_align(tab, LV_ALIGN_RIGHT_MID, 0, 0);
-  lv_obj_set_style_radius(tab, 10, LV_PART_MAIN);
-  lv_obj_t* tab1 = lv_tabview_add_tab(tab, "INIT");
-  lv_obj_t* tab2 = lv_tabview_add_tab(tab, "SECOND");
-  lv_obj_align(tab, LV_ALIGN_RIGHT_MID, 0, 0);
 }
 
 void setup()
