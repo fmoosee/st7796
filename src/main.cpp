@@ -108,7 +108,8 @@ void createMenu(){
   lv_obj_align(menu, LV_ALIGN_TOP_RIGHT, -10, 10);
   lv_dropdown_set_dir(menu, LV_DIR_LEFT);
   lv_obj_add_event_cb(menu, setMode, LV_EVENT_VALUE_CHANGED, NULL);
-  lv_dropdown_set_symbol(menu, LV_SYMBOL_LEFT);
+  lv_obj_t* meter = lv_meter_create(menuScr);
+  lv_obj_align(meter, LV_ALIGN_CENTER, 0, 0);
 }
 
 

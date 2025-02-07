@@ -2,5 +2,6 @@
     "files.associations": {
         "dsdigital_60.c": "cpp",
         "font_dsdigital_60_4bpp.c": "cpp"
-    }
+    },
+    "cmake.ignoreCMakeListsMissing": true
 }
