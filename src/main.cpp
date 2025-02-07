@@ -54,7 +54,6 @@ int second = 0;
 int minute = 0;
 int hour = 0;
 lv_obj_t* menuScr;
-static char output[30];
 LV_FONT_DECLARE(fontClock);
 
 void secClock(lv_timer_t* t){
@@ -70,14 +69,16 @@ void secClock(lv_timer_t* t){
   } else if(hour == 24){
     hour = 0;
   }
+  static char output[30];
   snprintf(output, sizeof(output), "%02d:%02d:%02d", hour, minute, second);
   lv_label_set_text(obj, output);
 }
+
 char labelText[8];
 char* options = "Economia\nEsfriar\nPersonalizado";
 
 void setMode(lv_event_t* e){
-  lv_obj_t* menu = lv_event_get_current_target(e);
+  lv_obj_t* menu = lv_event_get_target(e);
   int index = lv_dropdown_get_selected(menu);
   switch (index){
     case 0:
@@ -96,7 +97,6 @@ void createMenu(){
   menuScr = lv_obj_create(NULL);
   lv_scr_load(menuScr);
   lv_obj_t* labelClock = lv_label_create(menuScr);
-  lv_obj_set_style_bg_color(labelClock, lv_color_hex(0xffffff), LV_PART_MAIN);
   lv_obj_align(labelClock, LV_ALIGN_TOP_LEFT, 10, 10);
   lv_obj_set_style_bg_opa(labelClock, 50, LV_PART_MAIN);
   lv_obj_set_style_radius(labelClock, 10, LV_PART_MAIN); 
@@ -104,11 +104,11 @@ void createMenu(){
   lv_obj_t* menu = lv_dropdown_create(menuScr);
   lv_dropdown_set_options(menu, options);
   lv_dropdown_set_selected_highlight(menu, false);
-  lv_dropdown_set_symbol(menu, LV_SYMBOL_DOWN);
   lv_dropdown_set_text(menu, "Modo");
   lv_obj_align(menu, LV_ALIGN_TOP_RIGHT, -10, 10);
-  lv_dropdown_set_dir(menu, LV_DIR_BOTTOM);
+  lv_dropdown_set_dir(menu, LV_DIR_LEFT);
   lv_obj_add_event_cb(menu, setMode, LV_EVENT_VALUE_CHANGED, NULL);
+  lv_dropdown_set_symbol(menu, LV_SYMBOL_LEFT);
 }
 
 
