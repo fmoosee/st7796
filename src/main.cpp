@@ -50,68 +50,7 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
   }
 }
 
-int second = 0;
-int minute = 0;
-int hour = 0;
 lv_obj_t* menuScr;
-LV_FONT_DECLARE(fontClock);
-
-void secClock(lv_timer_t* t){
-  lv_obj_t* obj = (lv_obj_t*)t->user_data;
-  lv_obj_set_style_text_font(obj, &fontClock, LV_PART_MAIN);
-  second++;
-  if(second == 60){
-    minute++;
-    second = 0;
-  } else if(minute == 60){
-    hour++;
-    minute = 0;
-  } else if(hour == 24){
-    hour = 0;
-  }
-  static char output[30];
-  snprintf(output, sizeof(output), "%02d:%02d:%02d", hour, minute, second);
-  lv_label_set_text(obj, output);
-}
-
-char labelText[8];
-char* options = "Economia\nEsfriar\nPersonalizado";
-
-void setMode(lv_event_t* e){
-  lv_obj_t* menu = lv_event_get_target(e);
-  int index = lv_dropdown_get_selected(menu);
-  switch (index){
-    case 0:
-    LV_LOG_USER("item 1");
-    break;
-    case 1:
-    LV_LOG_USER("item 2");
-    break;
-    case 2:
-    LV_LOG_USER("item 3");
-    break;
-  }
-}
-
-void createMenu(){
-  menuScr = lv_obj_create(NULL);
-  lv_scr_load(menuScr);
-  lv_obj_t* labelClock = lv_label_create(menuScr);
-  lv_obj_align(labelClock, LV_ALIGN_TOP_LEFT, 10, 10);
-  lv_obj_set_style_bg_opa(labelClock, 50, LV_PART_MAIN);
-  lv_obj_set_style_radius(labelClock, 10, LV_PART_MAIN); 
-  lv_timer_t* timerClock = lv_timer_create(secClock, 1000, labelClock);
-  lv_obj_t* menu = lv_dropdown_create(menuScr);
-  lv_dropdown_set_options(menu, options);
-  lv_dropdown_set_selected_highlight(menu, false);
-  lv_dropdown_set_text(menu, "Modo");
-  lv_obj_align(menu, LV_ALIGN_TOP_RIGHT, -10, 10);
-  lv_dropdown_set_dir(menu, LV_DIR_LEFT);
-  lv_obj_add_event_cb(menu, setMode, LV_EVENT_VALUE_CHANGED, NULL);
-  lv_obj_t* meter = lv_meter_create(menuScr);
-  lv_obj_align(meter, LV_ALIGN_CENTER, 0, 0);
-}
-
 
 void setup()
 {
@@ -133,10 +72,24 @@ void setup()
   indev_drv.type = LV_INDEV_TYPE_POINTER;
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
-  sscanf(__TIME__ + 6, "%02d", &second);
-  sscanf(__TIME__ + 3, "%02d", &minute);
-  sscanf(__TIME__ , "%02d", &hour);
-  createMenu();
+  menuScr = lv_obj_create(NULL);
+  lv_scr_load(menuScr);
+  lv_obj_t* center = lv_obj_create(menuScr);
+  lv_obj_set_style_radius(center, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_size(center, 100, 100);
+  lv_obj_t* label = lv_label_create(center);
+  LV_FONT_DECLARE(fontClock);
+  lv_obj_set_style_clip_corner(center, true, 0);
+  lv_obj_set_style_text_font(label, &fontClock, 0);
+  lv_obj_center(label);
+  lv_label_set_text(label, "0");
+  lv_obj_add_event_cb(center, [] (lv_event_t* e){
+    lv_obj_t* obj = lv_event_get_target(e);
+    lv_obj_t* child = lv_obj_get_child(obj, NULL);
+    static int i = 0;
+    i++;
+    lv_label_set_text_fmt(child, "%d", i);
+  }, LV_EVENT_CLICKED, NULL);
 }
 void loop()
 {
