@@ -52,7 +52,6 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 
 LV_FONT_DECLARE(fontClock);
 lv_obj_t* menuScr;
-int32_t var = 1;
 
 void setup()
 {
@@ -76,11 +75,21 @@ void setup()
   lv_indev_drv_register(&indev_drv);
   menuScr = lv_obj_create(NULL);
   lv_scr_load(menuScr);
-  lv_obj_t* numericVal = lv_obj_create(menuScr);
-  lv_obj_center(numericVal);
-  lv_obj_set_size(numericVal, 100, 100);
-  lv_obj_set_style_radius(numericVal, LV_RADIUS_CIRCLE, 0);
-  lv_obj_set_style_bg_grad_color(numericVal, lv_color_hex(0xffffff), 0);
+  lv_obj_t* calendar = lv_calendar_create(menuScr);
+  lv_calendar_set_showed_date(calendar, 2025, 2);
+  lv_obj_center(calendar);
+  lv_calendar_header_arrow_create(calendar);
+  lv_obj_add_event_cb(calendar, [](lv_event_t* e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_current_target(e);
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        lv_calendar_date_t date;
+        if(lv_calendar_get_pressed_date(obj, &date)) {
+            LV_LOG_USER("Clicked date: %02d.%02d.%d", date.day, date.month, date.year);
+            lv_calendar_set_today_date(obj, date.year, date.month, date.day);
+        }
+    }
+  }, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 void loop()
