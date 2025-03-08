@@ -52,6 +52,7 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 
 LV_FONT_DECLARE(fontClock);
 lv_obj_t* menuScr;
+lv_obj_t* scr1;
 
 void setup()
 {
@@ -75,21 +76,31 @@ void setup()
   lv_indev_drv_register(&indev_drv);
   menuScr = lv_obj_create(NULL);
   lv_scr_load(menuScr);
-  lv_obj_t* calendar = lv_calendar_create(menuScr);
-  lv_calendar_set_showed_date(calendar, 2025, 2);
-  lv_obj_center(calendar);
-  lv_calendar_header_arrow_create(calendar);
-  lv_obj_add_event_cb(calendar, [](lv_event_t* e) {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_current_target(e);
-    if(code == LV_EVENT_VALUE_CHANGED) {
-        lv_calendar_date_t date;
-        if(lv_calendar_get_pressed_date(obj, &date)) {
-            LV_LOG_USER("Clicked date: %02d.%02d.%d", date.day, date.month, date.year);
-            lv_calendar_set_today_date(obj, date.year, date.month, date.day);
-        }
+  scr1 = lv_obj_create(NULL);
+  lv_obj_add_event_cb(scr1, [](lv_event_t* e){
+    lv_obj_t* obj = lv_event_get_target(e);
+    lv_indev_t* indev = lv_indev_get_act();
+    if(lv_indev_get_gesture_dir(indev) == LV_DIR_LEFT){
+      lv_scr_load_anim(menuScr, LV_SCR_LOAD_ANIM_OVER_LEFT, 500, 0, false);
+      LV_LOG_USER("menuScr");
     }
-  }, LV_EVENT_VALUE_CHANGED, NULL);
+  },LV_EVENT_GESTURE, NULL);
+  lv_obj_add_event_cb(menuScr, [](lv_event_t* e){
+    lv_obj_t* obj = lv_event_get_target(e);
+    lv_indev_t* indev = lv_indev_get_act();
+    if(lv_indev_get_gesture_dir(indev) == LV_DIR_RIGHT){
+      lv_scr_load_anim(scr1, LV_SCR_LOAD_ANIM_OVER_RIGHT, 2000, 0, false);
+      LV_LOG_USER("scr1");
+    }
+  },LV_EVENT_GESTURE, NULL);
+  lv_obj_set_style_bg_color(menuScr, lv_color_hex(0xFAFAFA), 0);
+  lv_obj_t* label = lv_label_create(menuScr);
+  lv_label_set_text(label, "Menu");
+  lv_obj_set_style_text_color(label, lv_color_hex(0x000000), 0);
+  lv_obj_center(label);
+  lv_obj_t* label1 = lv_label_create(scr1);
+  lv_label_set_text(label1, "Screen 1");
+  lv_obj_center(label1);
 }
 
 void loop()
