@@ -1,98 +1,47 @@
 #include <Arduino.h>
-#include <lvgl.h>
-#include <TFT_eSPI.h>
-#include "touch.h"
-#include <fontClock.c>
-
-/*Don't forget to set Sketchbook location in File/Preferencesto the path of your UI project (the parent foder of this INO file)*/
-
-/*Change to your screen resolution*/
-static const uint16_t screenWidth  = 480;
-static const uint16_t screenHeight = 320;
-
-static lv_disp_draw_buf_t draw_buf;
-static lv_color_t buf[ screenWidth * screenHeight / 10 ];
-TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight); /* TFT instance */
-
-
-/* Display flushing */
-void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
-{
-  uint32_t w = ( area->x2 - area->x1 + 1 );
-  uint32_t h = ( area->y2 - area->y1 + 1 );
-  tft.startWrite();
-  tft.setAddrWindow( area->x1, area->y1, w, h );
-  tft.pushColors( ( uint16_t * )&color_p->full, w * h, true );
-  tft.endWrite();
-  lv_disp_flush_ready( disp );
-}
-
-/*Read the touchpad*/
-void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
-{
-  if (touch_has_signal())
-  {
-    if (touch_touched())
-    {
-      data->state = LV_INDEV_STATE_PR;
-      /*Set the coordinates*/
-      data->point.x = touch_last_x;
-      data->point.y = touch_last_y;
-    }
-    else if (touch_released())
-    {
-      data->state = LV_INDEV_STATE_REL;
-    }
-  }
-  else
-  {
-    data->state = LV_INDEV_STATE_REL;
-  }
-}
+#include "display_driver.h"
 
 lv_obj_t* menuScr;
 
 void setup()
 {
-  Serial.begin(115200); /* prepare for possible serial debug */
-  tft.begin();          /* TFT init */
-  tft.setRotation(3); /* Landscape orientation, flipped */
-  touch_init(480, 320, 3);
-  lv_init();
-  lv_disp_draw_buf_init(&draw_buf, buf, NULL, screenWidth * screenHeight / 10);
-  static lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.hor_res = screenWidth;
-  disp_drv.ver_res = screenHeight;
-  disp_drv.flush_cb = my_disp_flush;
-  disp_drv.draw_buf = &draw_buf;
-  lv_disp_drv_register(&disp_drv);
-  static lv_indev_drv_t indev_drv;
-  lv_indev_drv_init( &indev_drv );
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  indev_drv.read_cb = my_touchpad_read;
-  lv_indev_drv_register(&indev_drv);
-  menuScr = lv_obj_create(NULL);
-  lv_scr_load(menuScr);
-  lv_obj_t* center = lv_obj_create(menuScr);
-  lv_obj_set_style_radius(center, LV_RADIUS_CIRCLE, 0);
-  lv_obj_set_size(center, 100, 100);
-  lv_obj_t* label = lv_label_create(center);
-  LV_FONT_DECLARE(fontClock);
-  lv_obj_set_style_clip_corner(center, true, 0);
-  lv_obj_set_style_text_font(label, &fontClock, 0);
-  lv_obj_center(label);
-  lv_label_set_text(label, "0");
-  lv_obj_add_event_cb(center, [] (lv_event_t* e){
-    lv_obj_t* obj = lv_event_get_target(e);
-    lv_obj_t* child = lv_obj_get_child(obj, NULL);
-    static int i = 0;
-    i++;
-    lv_label_set_text_fmt(child, "%d", i);
-  }, LV_EVENT_CLICKED, NULL);
+    Serial.begin(115200);
+
+    // Uma única linha inicializa tudo: ST7796, FT6336, buffers e LVGL
+    display_init();
+
+    // --- Construção da Interface Gráfica ---
+    menuScr = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(menuScr, lv_color_hex(0x1E1E1E), 0);
+    lv_scr_load(menuScr);
+
+    // Botão circular centralizado
+    lv_obj_t* btn = lv_obj_create(menuScr);
+    lv_obj_set_size(btn, 130, 130);
+    lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(btn, lv_color_hex(0x007ACC), 0);
+    lv_obj_set_style_border_width(btn, 0, 0);
+    lv_obj_center(btn);
+
+    // Texto com contador dentro do botão
+    lv_obj_t* label = lv_label_create(btn);
+    lv_obj_center(label);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_label_set_text(label, "0");
+
+    // Evento de clique
+    lv_obj_add_event_cb(btn, [](lv_event_t* e){
+        lv_obj_t* target = lv_event_get_target(e);
+        lv_obj_t* lbl = lv_obj_get_child(target, 0);
+        static int clicks = 0;
+        clicks++;
+        lv_label_set_text_fmt(lbl, "%d", clicks);
+        Serial.printf("Botao pressionado! Cliques: %d\n", clicks);
+    }, LV_EVENT_CLICKED, NULL);
 }
+
 void loop()
 {
-  lv_timer_handler(); /* let the GUI do its work */
-  delay(10);
+    display_update();
+    delay(5);
 }

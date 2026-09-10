@@ -19,8 +19,8 @@
 
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
 
-//#include <User_Setup.h>           // Default setup is root library folder
-#include <../TFT_eSPI_Setups/mySetup27_ST7796_ESP32.h>
+#include <User_Setup.h>           // Default setup is root library folder
+//#include <../TFT_eSPI_Setups/mySetup27_ST7796_ESP32.h>
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file for ESP8266 configured for my ST7735
 //#include <User_Setups/Setup3_ILI9163.h>  // Setup file for ESP8266 configured for my ILI9163
